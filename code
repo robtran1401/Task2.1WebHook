@@ -1,0 +1,133 @@
+#include <Wire.h>
+#include <SPI.h>
+#include <WiFiNINA.h>
+#include "ThingSpeak.h"
+#include "DHT.h"
+#include <BH1750.h>
+
+// ---------------- WIFI ----------------
+char ssid[] = "Optus_8D9EDB";
+char pass[] = "subahwackeUFaXf";
+
+// ---------------- THINGSPEAK ----------------
+unsigned long channelID = 3307064;
+const char * writeAPIKey = "KN7RPR6K0KBV19B0";
+WiFiClient client;
+
+// =====================
+// Sensor pins
+// =====================
+#define DHTPIN 2
+#define DHTTYPE DHT11      // Change to DHT22 if you are using DHT22
+#define LIGHT_PIN A0
+
+DHT dht(DHTPIN, DHTTYPE);
+
+// =====================
+// Timing
+// =====================
+const unsigned long uploadInterval = 30000; // 30 seconds
+unsigned long lastUploadTime = 0;
+
+// =====================
+// Function prototypes
+// =====================
+void connectToWiFi();
+float readTemperature();
+int readLightLevel();
+void printReadings(float temperature, int lightLevel);
+void sendDataToThingSpeak(float temperature, int lightLevel);
+
+void setup() {
+  Serial.begin(9600);
+  delay(1500);
+
+  dht.begin();
+  connectToWiFi();
+  ThingSpeak.begin(client);
+
+  Serial.println("System started.");
+}
+
+void loop() {
+  // Reconnect WiFi if needed
+  if (WiFi.status() != WL_CONNECTED) {
+    connectToWiFi();
+  }
+
+  // Upload every 30 seconds
+  if (millis() - lastUploadTime >= uploadInterval) {
+    float temperature = readTemperature();
+    int lightLevel = readLightLevel();
+
+    if (!isnan(temperature)) {
+      printReadings(temperature, lightLevel);
+      sendDataToThingSpeak(temperature, lightLevel);
+    } else {
+      Serial.println("Error: Failed to read from DHT sensor.");
+    }
+
+    lastUploadTime = millis();
+  }
+}
+
+// =====================
+// Connect to WiFi
+// =====================
+void connectToWiFi() {
+  Serial.print("Connecting to WiFi");
+
+  while (WiFi.status() != WL_CONNECTED) {
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    delay(5000);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("WiFi connected.");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+// =====================
+// Read temperature
+// =====================
+float readTemperature() {
+  return dht.readTemperature();
+}
+
+// =====================
+// Read light sensor
+// =====================
+int readLightLevel() {
+  return analogRead(LIGHT_PIN);
+}
+
+// =====================
+// Print readings
+// =====================
+void printReadings(float temperature, int lightLevel) {
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.println(" C");
+
+  Serial.print("Light Level: ");
+  Serial.println(lightLevel);
+}
+
+// =====================
+// Send to ThingSpeak
+// =====================
+void sendDataToThingSpeak(float temperature, int lightLevel) {
+  ThingSpeak.setField(1, temperature);
+  ThingSpeak.setField(2, lightLevel);
+
+  int responseCode = ThingSpeak.writeFields(channelNumber, writeAPIKey);
+
+  if (responseCode == 200) {
+    Serial.println("Data sent to ThingSpeak successfully.");
+  } else {
+    Serial.print("ThingSpeak update failed. HTTP error code: ");
+    Serial.println(responseCode);
+  }
+}
