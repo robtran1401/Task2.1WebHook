@@ -14,24 +14,17 @@ unsigned long channelID = 3307064;
 const char * writeAPIKey = "KN7RPR6K0KBV19B0";
 WiFiClient client;
 
-// =====================
 // Sensor pins
-// =====================
 #define DHTPIN 2
-#define DHTTYPE DHT11      // Change to DHT22 if you are using DHT22
+#define DHTTYPE DHT11      
 #define LIGHT_PIN A0
 
 DHT dht(DHTPIN, DHTTYPE);
 
-// =====================
 // Timing
-// =====================
 const unsigned long uploadInterval = 30000; // 30 seconds
 unsigned long lastUploadTime = 0;
 
-// =====================
-// Function prototypes
-// =====================
 void connectToWiFi();
 float readTemperature();
 int readLightLevel();
@@ -70,10 +63,6 @@ void loop() {
     lastUploadTime = millis();
   }
 }
-
-// =====================
-// Connect to WiFi
-// =====================
 void connectToWiFi() {
   Serial.print("Connecting to WiFi");
 
@@ -89,23 +78,21 @@ void connectToWiFi() {
   Serial.println(WiFi.localIP());
 }
 
-// =====================
+
 // Read temperature
-// =====================
 float readTemperature() {
   return dht.readTemperature();
 }
 
-// =====================
+
 // Read light sensor
-// =====================
 int readLightLevel() {
   return analogRead(LIGHT_PIN);
 }
 
-// =====================
+
 // Print readings
-// =====================
+
 void printReadings(float temperature, int lightLevel) {
   Serial.print("Temperature: ");
   Serial.print(temperature);
@@ -115,9 +102,9 @@ void printReadings(float temperature, int lightLevel) {
   Serial.println(lightLevel);
 }
 
-// =====================
+
 // Send to ThingSpeak
-// =====================
+
 void sendDataToThingSpeak(float temperature, int lightLevel) {
   ThingSpeak.setField(1, temperature);
   ThingSpeak.setField(2, lightLevel);
