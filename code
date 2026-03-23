@@ -103,7 +103,7 @@ void printReadings(float temperature, int lightLevel) {
 }
 
 
-// Send to ThingSpeak
+// Send to ThingSpeak (question 1C)
 
 void sendDataToThingSpeak(float temperature, int lightLevel) {
   ThingSpeak.setField(1, temperature);
