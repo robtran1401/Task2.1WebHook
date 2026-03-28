@@ -5,18 +5,18 @@
 #include "DHT.h"
 #include <BH1750.h>
 
-// ---------------- WIFI ----------------
+// WIFI
 char ssid[] = "Optus_8D9EDB";
 char pass[] = "subahwackeUFaXf";
 
-// ---------------- THINGSPEAK ----------------
+// THINGSPEAK 
 unsigned long channelID = 3307064;
-const char * writeAPIKey = "KN7RPR6K0KBV19B0";
+const char *writeAPIKey = "KN7RPR6K0KBV19B0";
 WiFiClient client;
 
 // Sensor pins
 #define DHTPIN 2
-#define DHTTYPE DHT11      
+#define DHTTYPE DHT11
 #define LIGHT_PIN A0
 
 DHT dht(DHTPIN, DHTTYPE);
@@ -25,6 +25,7 @@ DHT dht(DHTPIN, DHTTYPE);
 const unsigned long uploadInterval = 30000; // 30 seconds
 unsigned long lastUploadTime = 0;
 
+// Function prototypes
 void connectToWiFi();
 float readTemperature();
 int readLightLevel();
@@ -43,12 +44,10 @@ void setup() {
 }
 
 void loop() {
-  // Reconnect WiFi if needed
   if (WiFi.status() != WL_CONNECTED) {
     connectToWiFi();
   }
 
-  // Upload every 30 seconds
   if (millis() - lastUploadTime >= uploadInterval) {
     float temperature = readTemperature();
     int lightLevel = readLightLevel();
@@ -63,11 +62,12 @@ void loop() {
     lastUploadTime = millis();
   }
 }
+
 void connectToWiFi() {
   Serial.print("Connecting to WiFi");
 
   while (WiFi.status() != WL_CONNECTED) {
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    WiFi.begin(ssid, pass);   // I have fixed 
     delay(5000);
     Serial.print(".");
   }
@@ -78,20 +78,13 @@ void connectToWiFi() {
   Serial.println(WiFi.localIP());
 }
 
-
-// Read temperature
 float readTemperature() {
   return dht.readTemperature();
 }
 
-
-// Read light sensor
 int readLightLevel() {
   return analogRead(LIGHT_PIN);
 }
-
-
-// Print readings
 
 void printReadings(float temperature, int lightLevel) {
   Serial.print("Temperature: ");
@@ -102,14 +95,11 @@ void printReadings(float temperature, int lightLevel) {
   Serial.println(lightLevel);
 }
 
-
-// Send to ThingSpeak (question 1C)
-
 void sendDataToThingSpeak(float temperature, int lightLevel) {
   ThingSpeak.setField(1, temperature);
   ThingSpeak.setField(2, lightLevel);
 
-  int responseCode = ThingSpeak.writeFields(channelNumber, writeAPIKey);
+  int responseCode = ThingSpeak.writeFields(channelID, writeAPIKey);   // I have fixed
 
   if (responseCode == 200) {
     Serial.println("Data sent to ThingSpeak successfully.");
