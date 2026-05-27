@@ -6,8 +6,8 @@
 #include <BH1750.h>
 
 // WIFI
-char ssid[] = "Optus_8D9EDB";
-char pass[] = "subahwackeUFaXf";
+char ssid[] = "wifi";
+char pass[] = "password";
 
 // THINGSPEAK 
 unsigned long channelID = 3307064;
